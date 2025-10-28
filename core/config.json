@@ -1,0 +1,68 @@
+{
+  "routes": {},
+  "applications": {
+    "calculations-agent": {
+      "displayName": "Calculations Agent",
+      "description": "Calculations Agent. Primary goal to to work with calculations. Capable to make plotly graphics and chart bars. Equipped with: Python Code Interpreter (via MCP), and Simple calculator.",
+      "endpoint": "http://host.docker.internal:5001/openai/deployments/calculations-agent/chat/completions",
+      "inputAttachmentTypes": [],
+      "forwardAuthToken": true
+    },
+    "content-management-agent": {
+      "displayName": "Content Management Agent",
+      "description": "Content Management Agent. Equipped with: Files content extractor and RAG search (supports PDF, TXT, CSV files).",
+      "endpoint": "http://host.docker.internal:5002/openai/deployments/content-management-agent/chat/completions",
+      "inputAttachmentTypes": [
+        "application/pdf",
+        "text/html",
+        "text/plain",
+        "text/csv"
+      ],
+      "forwardAuthToken": true
+    },
+    "web-search-agent": {
+      "displayName": "WEB Search Agent",
+      "description": "WEB Search Agent. Performs research in WEB based on the user request. Equipped with: WEB search (DuckDuckGo via MCP) and is able to fetch WEB pages content.",
+      "endpoint": "http://host.docker.internal:5003/openai/deployments/web-search-agent/chat/completions",
+      "inputAttachmentTypes": [],
+      "forwardAuthToken": true
+    },
+    "client-agent": {
+      "displayName": "Client Agent",
+      "description": "Client Agent. Works as MAS Coordinator with WEB Search Agent, Content Management Agent and Calculations Agent.",
+      "endpoint": "http://host.docker.internal:5005/openai/deployments/client-agent/chat/completions",
+      "inputAttachmentTypes": [
+        "application/pdf",
+        "text/html",
+        "text/plain",
+        "text/csv"
+      ],
+      "forwardAuthToken": true
+    }
+  },
+  "models": {
+    "gpt-4o": {
+      "displayName": "GPT 4o",
+      "endpoint": "http://adapter-dial:5000/openai/deployments/gpt-4o/chat/completions",
+      "iconUrl": "http://localhost:3001/gpt4.svg",
+      "type": "chat",
+      "upstreams": [
+        {
+          "endpoint": "https://ai-proxy.lab.epam.com/openai/deployments/gpt-4o/chat/completions",
+          "key": "{YOUR_DIAL_API_KEY}"
+        }
+      ]
+    }
+  },
+  "keys": {
+    "dial_api_key": {
+      "project": "TEST-PROJECT",
+      "role": "default"
+    }
+  },
+  "roles": {
+    "default": {
+      "limits": {}
+    }
+  }
+}
