@@ -26,18 +26,6 @@
       "endpoint": "http://host.docker.internal:5003/openai/deployments/web-search-agent/chat/completions",
       "inputAttachmentTypes": [],
       "forwardAuthToken": true
-    },
-    "client-agent": {
-      "displayName": "Client Agent",
-      "description": "Client Agent. Works as MAS Coordinator with WEB Search Agent, Content Management Agent and Calculations Agent.",
-      "endpoint": "http://host.docker.internal:5005/openai/deployments/client-agent/chat/completions",
-      "inputAttachmentTypes": [
-        "application/pdf",
-        "text/html",
-        "text/plain",
-        "text/csv"
-      ],
-      "forwardAuthToken": true
     }
   },
   "models": {
