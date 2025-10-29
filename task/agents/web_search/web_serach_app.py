@@ -54,7 +54,7 @@ class WebSearchApplication(ChatCompletion):
 
 
 app: DIALApp = DIALApp()
-agent_app = GeneralPurposeAgentApplication()
+agent_app = WebSearchApplication()
 app.add_chat_completion(deployment_name="web-search-agent", impl=agent_app)
 
 if __name__ == "__main__":
