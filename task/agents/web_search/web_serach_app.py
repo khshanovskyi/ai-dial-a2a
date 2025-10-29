@@ -12,7 +12,7 @@ from task.utils.constants import DIAL_ENDPOINT, DEPLOYMENT_NAME
 
 _DDG_MCP_URL = os.getenv('DDG_MCP_URL', "http://localhost:8051/mcp")
 
-class GeneralPurposeAgentApplication(ChatCompletion):
+class WebSearchApplication(ChatCompletion):
 
     def __init__(self):
         self.tools: list[BaseTool] = []
