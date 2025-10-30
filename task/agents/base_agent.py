@@ -79,7 +79,7 @@ class BaseAgent:
                 self._process_tool_call(
                     tool_call=tool_call,
                     choice=choice,
-                    api_key=api_key,
+                    request=request,
                     conversation_id=request.headers['x-conversation-id']
                 )
                 for tool_call in assistant_message.tool_calls
@@ -118,7 +118,7 @@ class BaseAgent:
 
         return unpacked_messages
 
-    async def _process_tool_call(self, tool_call: ToolCall, choice: Choice, api_key: str, conversation_id: str) -> dict[
+    async def _process_tool_call(self, tool_call: ToolCall, choice: Choice, request: Request, conversation_id: str) -> dict[
         str, Any]:
         tool_name = tool_call.function.name
         tool = self._tools_dict[tool_name]
@@ -141,8 +141,9 @@ class BaseAgent:
                 tool_call=tool_call,
                 stage=stage,
                 choice=choice,
-                api_key=api_key,
-                conversation_id=conversation_id
+                api_key=request.api_key,
+                conversation_id=conversation_id,
+                messages=request.messages
             )
         )
 

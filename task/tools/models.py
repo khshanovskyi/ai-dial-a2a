@@ -10,7 +10,7 @@ class ToolCallParams:
     choice: Choice
     api_key: str
     conversation_id: str
-    messages: list[Message] = list
+    messages: list[Message]
 
 
 @dataclass

@@ -45,18 +45,19 @@ class DeploymentTool(BaseTool, ABC):
                         msg_state = msg.custom_content.state
                         if msg_state.get(self._state_key_name):
                             # 1. add user request (user message is always before assistant message)
-                            messages.append(tool_call_params.messages[idx-1].dict(exclude_none=True))
+                            messages.append(tool_call_params.messages[idx - 1].dict(exclude_none=True))
 
                             # 2. Copy assistant message
                             copied_msg = deepcopy(msg)
                             copied_msg.custom_content.state = msg_state.get(self._state_key_name)
                             messages.append(copied_msg.dict(exclude_none=True))
         else:
+            custom_content = tool_call_params.messages[-1].custom_content
             messages = [
                 {
                     "role": "user",
                     "content": prompt,
-                    "custom_content": tool_call_params.messages[-1].custom_content.dict(exclude_none=True),
+                    "custom_content": custom_content.dict(exclude_none=True) if custom_content else None,
                 }
             ]
 
@@ -80,6 +81,9 @@ class DeploymentTool(BaseTool, ABC):
                 "custom_fields": {
                     "configuration": {**arguments}
                 }
+            },
+            extra_headers={
+                "x-conversation-id": tool_call_params.conversation_id,
             },
             **self.tool_parameters,
         )
@@ -113,4 +117,3 @@ class DeploymentTool(BaseTool, ABC):
             custom_content=custom_content,
             tool_call_id=StrictStr(tool_call_params.tool_call.id),
         )
-
