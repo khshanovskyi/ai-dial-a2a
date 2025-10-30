@@ -5,7 +5,12 @@
       "displayName": "Calculations Agent",
       "description": "Calculations Agent. Primary goal to to work with calculations. Capable to make plotly graphics and chart bars. Equipped with: Python Code Interpreter (via MCP), and Simple calculator.",
       "endpoint": "http://host.docker.internal:5001/openai/deployments/calculations-agent/chat/completions",
-      "inputAttachmentTypes": [],
+      "inputAttachmentTypes": [
+        "application/pdf",
+        "text/html",
+        "text/plain",
+        "text/csv"
+      ],
       "forwardAuthToken": true
     },
     "content-management-agent": {
@@ -24,7 +29,12 @@
       "displayName": "WEB Search Agent",
       "description": "WEB Search Agent. Performs research in WEB based on the user request. Equipped with: WEB search (DuckDuckGo via MCP) and is able to fetch WEB pages content.",
       "endpoint": "http://host.docker.internal:5003/openai/deployments/web-search-agent/chat/completions",
-      "inputAttachmentTypes": [],
+      "inputAttachmentTypes": [
+        "application/pdf",
+        "text/html",
+        "text/plain",
+        "text/csv"
+      ],
       "forwardAuthToken": true
     }
   },
