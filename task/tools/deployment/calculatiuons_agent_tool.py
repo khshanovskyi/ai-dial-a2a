@@ -29,7 +29,7 @@ class CalculationsAgentTool(BaseAgentTool):
 
     @property
     def name(self) -> str:
-        return "calculations_agent_tool"
+        return "calculations_agent"
 
     @property
     def description(self) -> str:

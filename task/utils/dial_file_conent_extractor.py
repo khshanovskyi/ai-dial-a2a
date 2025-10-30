@@ -1,7 +1,7 @@
 import io
 from pathlib import Path
 
-import PyPDF2
+import pdfplumber
 import pandas as pd
 from aidial_client import Dial
 from bs4 import BeautifulSoup
@@ -33,11 +33,13 @@ class DialFileContentExtractor:
 
             elif file_extension == '.pdf':
                 pdf_file = io.BytesIO(file_content)
-                pdf_reader = PyPDF2.PdfReader(pdf_file)
                 text = []
-                for page in pdf_reader.pages:
-                    text.append(page.extract_text())
-                return '\n'.join(text)
+                with pdfplumber.open(pdf_file) as pdf:
+                    for page in pdf.pages:
+                        page_text = page.extract_text()
+                        if page_text:
+                            text.append(page_text)
+                return '\n\n'.join(text)
 
             elif file_extension == '.csv':
                 text_content = file_content.decode('utf-8', errors='ignore')

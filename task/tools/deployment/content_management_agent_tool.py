@@ -29,7 +29,7 @@ class ContentManagementAgentTool(BaseAgentTool):
 
     @property
     def name(self) -> str:
-        return "content_management_agent_tool"
+        return "content_management_agent"
 
     @property
     def description(self) -> str:

@@ -14,6 +14,7 @@ class StageProcessor:
     @staticmethod
     def close_stage_safely(stage: Stage) -> None:
         try:
-            stage.close()
+            if not stage._closed:
+                stage.close()
         except Exception as e:
             print("⚠️ Unable to close stage. ", e)

@@ -29,7 +29,7 @@ class WebSearchAgentTool(BaseAgentTool):
 
     @property
     def name(self) -> str:
-        return "web_search_agent_tool"
+        return "web_search_agent"
 
     @property
     def description(self) -> str:

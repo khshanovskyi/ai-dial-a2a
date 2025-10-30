@@ -38,7 +38,7 @@ class RagTool(BaseTool):
             chunk_size=500,
             chunk_overlap=50,
             length_function=len,
-            separators=["\n\n", "\n", ". ", " ", ""]
+            separators=["\n\n"]
         )
 
     @property

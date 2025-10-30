@@ -65,15 +65,17 @@ class BaseAgentTool(BaseTool, ABC):
         return messages
 
     async def _execute(self, tool_call_params: ToolCallParams) -> str | Message:
+
+        stage = tool_call_params.stage
+        arguments = json.loads(tool_call_params.tool_call.function.arguments)
+        if prompt := arguments.get("prompt"):
+            stage.append_name(f": {prompt}")
+            del arguments["prompt"]
+
         client: AsyncDial = AsyncDial(
             base_url=self.endpoint,
             api_key=tool_call_params.api_key,
         )
-
-        arguments = json.loads(tool_call_params.tool_call.function.arguments)
-        if arguments.get("prompt"):
-            del arguments["prompt"]
-
         chunks = await client.chat.completions.create(
             messages=self._prepare_messages(tool_call_params),
             stream=True,
@@ -89,7 +91,6 @@ class BaseAgentTool(BaseTool, ABC):
             **self.tool_parameters,
         )
 
-        stage = tool_call_params.stage
         content = ''
         custom_content: CustomContent = CustomContent(attachments=[])
         stages_map: dict[int, Stage] = {}
@@ -100,7 +101,6 @@ class BaseAgentTool(BaseTool, ABC):
                     stage.append_content(delta.content)
                     content += delta.content
                 if cc := delta.custom_content:
-                    print(cc)
                     if cc.attachments:
                         custom_content.attachments.extend(cc.attachments)
 
@@ -112,7 +112,9 @@ class BaseAgentTool(BaseTool, ABC):
                         for stg in stages:
                             idx = stg["index"]
                             if opened_stg := stages_map.get(idx):
-                                if stg_content := stg.get("content"):
+                                if stg_name := stg.get("name"):
+                                    opened_stg.append_name(stg_name)
+                                elif stg_content := stg.get("content"):
                                     opened_stg.append_content(stg_content)
                                 elif stg_attachments := stg.get("attachments"):
                                     for stg_attachment in stg_attachments:
