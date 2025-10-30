@@ -18,10 +18,7 @@ _DDG_MCP_URL = os.getenv('DDG_MCP_URL', "http://localhost:8051/mcp")
 class WebSearchApplication(ChatCompletion):
 
     def __init__(self):
-        self.tools: list[BaseTool] = [
-            CalculationsAgentTool(DIAL_ENDPOINT),
-            ContentManagementAgentTool(DIAL_ENDPOINT),
-        ]
+        self.tools: list[BaseTool] = []
 
     async def _get_mcp_tools(self, url: str) -> list[BaseTool]:
         try:
@@ -41,11 +38,16 @@ class WebSearchApplication(ChatCompletion):
 
     async def _create_tools(self) -> list[BaseTool]:
         print(f"DDG_MCP_URL {_DDG_MCP_URL}")
-        return await self._get_mcp_tools(_DDG_MCP_URL)
+        tools: list[BaseTool] = [
+            CalculationsAgentTool(DIAL_ENDPOINT),
+            ContentManagementAgentTool(DIAL_ENDPOINT),
+        ]
+        tools.extend(await self._get_mcp_tools(_DDG_MCP_URL))
+        return tools
 
     async def chat_completion(self, request: Request, response: Response) -> None:
         if not self.tools:
-            self.tools.extend(await self._create_tools())
+            self.tools = await self._create_tools()
 
         with response.create_single_choice() as choice:
             await WebSearchAgent(

@@ -2,12 +2,12 @@ from typing import Any
 
 from aidial_sdk.chat_completion import Message
 
-from task.tools.deployment.base import DeploymentTool
+from task.tools.deployment.base_agent_tool import BaseAgentTool
 from task.tools.models import ToolCallParams
 from task.utils.constants import WEB_SEARCH_AGENT_HISTORY_KEY, TOOL_CALL_HISTORY_KEY
 
 
-class WebSearchAgentTool(DeploymentTool):
+class WebSearchAgentTool(BaseAgentTool):
 
     @property
     def _state_key_name(self) -> str:

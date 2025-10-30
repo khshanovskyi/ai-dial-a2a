@@ -4,14 +4,15 @@ from copy import deepcopy
 from typing import Any
 
 from aidial_client import AsyncDial
-from aidial_sdk.chat_completion import Message, Role, CustomContent
+from aidial_sdk.chat_completion import Message, Role, CustomContent, Stage, Attachment
 from pydantic import StrictStr
 
 from task.tools.base_tool import BaseTool
 from task.tools.models import ToolCallParams
+from task.utils.stage import StageProcessor
 
 
-class DeploymentTool(BaseTool, ABC):
+class BaseAgentTool(BaseTool, ABC):
 
     def __init__(self, endpoint: str):
         self.endpoint = endpoint
@@ -33,7 +34,7 @@ class DeploymentTool(BaseTool, ABC):
     def _prepare_messages(self, tool_call_params: ToolCallParams) -> list[dict[str, Any]]:
         arguments = json.loads(tool_call_params.tool_call.function.arguments)
         prompt = arguments["prompt"]
-        propagate_history = bool(arguments["propagate_history"])
+        propagate_history = bool(arguments.get("propagate_history", False))
 
         messages = []
 
@@ -88,28 +89,46 @@ class DeploymentTool(BaseTool, ABC):
             **self.tool_parameters,
         )
 
+        stage = tool_call_params.stage
         content = ''
         custom_content: CustomContent = CustomContent(attachments=[])
+        stages_map: dict[int, Stage] = {}
         async for chunk in chunks:
             if chunk.choices and len(chunk.choices) > 0:
                 delta = chunk.choices[0].delta
-                if delta:
-                    if delta.content:
-                        tool_call_params.stage.append_content(delta.content)
-                        content += delta.content
-                    if delta.custom_content and delta.custom_content.attachments:
-                        attachments = delta.custom_content.attachments
-                        custom_content.attachments.extend(attachments)
+                if delta and delta.content:
+                    stage.append_content(delta.content)
+                    content += delta.content
+                if cc := delta.custom_content:
+                    print(cc)
+                    if cc.attachments:
+                        custom_content.attachments.extend(cc.attachments)
 
-                        for attachment in attachments:
-                            tool_call_params.stage.add_attachment(
-                                type=attachment.type,
-                                title=attachment.title,
-                                data=attachment.data,
-                                url=attachment.url,
-                                reference_url=attachment.reference_url,
-                                reference_type=attachment.reference_type,
-                            )
+                    if cc.state:
+                        custom_content.state = cc.state
+
+                    cc_dict = cc.dict(exclude_none=True)
+                    if stages := cc_dict.get("stages"):
+                        for stg in stages:
+                            idx = stg["index"]
+                            if opened_stg := stages_map.get(idx):
+                                if stg_content := stg.get("content"):
+                                    opened_stg.append_content(stg_content)
+                                elif stg_attachments := stg.get("attachments"):
+                                    for stg_attachment in stg_attachments:
+                                        opened_stg.add_attachment(Attachment(**stg_attachment))
+                                elif stg.get("status") and stg.get("status") == 'completed':
+                                    StageProcessor.close_stage_safely(stages_map[idx])
+                            else:
+                                stages_map[idx] = StageProcessor.open_stage(tool_call_params.choice, stg.get("name"))
+
+        for stg in stages_map.values():
+            StageProcessor.close_stage_safely(stg)
+
+        for attachment in custom_content.attachments:
+            tool_call_params.choice.add_attachment(
+                Attachment(**attachment.dict(exclude_none=True))
+            )
 
         return Message(
             role=Role.TOOL,

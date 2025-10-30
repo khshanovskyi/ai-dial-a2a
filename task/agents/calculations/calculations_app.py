@@ -16,16 +16,15 @@ from task.utils.constants import DIAL_ENDPOINT, DEPLOYMENT_NAME
 class CalculationsApplication(ChatCompletion):
 
     def __init__(self):
-        self.tools: list[BaseTool] = [
-            ContentManagementAgentTool(DIAL_ENDPOINT),
-            WebSearchAgentTool(DIAL_ENDPOINT),
-        ]
+        self.tools: list[BaseTool] = []
 
     async def _create_tools(self) -> list[BaseTool]:
         py_interpreter_mcp_url = os.getenv('PYINTERPRETER_MCP_URL', "http://localhost:8050/mcp")
         print(f"PYINTERPRETER_MCP_URL {py_interpreter_mcp_url}")
 
         tools: list[BaseTool] = [
+            ContentManagementAgentTool(DIAL_ENDPOINT),
+            WebSearchAgentTool(DIAL_ENDPOINT),
             SimpleCalculatorTool(),
             await PythonCodeInterpreterTool.create(
                 mcp_url=py_interpreter_mcp_url,
@@ -37,7 +36,7 @@ class CalculationsApplication(ChatCompletion):
 
     async def chat_completion(self, request: Request, response: Response) -> None:
         if not self.tools:
-            self.tools.extend( await self._create_tools())
+            self.tools = await self._create_tools()
 
         with response.create_single_choice() as choice:
             await CalculationsAgent(
