@@ -79,7 +79,6 @@ class BaseAgentTool(BaseTool, ABC):
             extra_headers={
                 "x-conversation-id": tool_call_params.conversation_id,
             },
-            **self.tool_parameters,
         )
 
         content = ''
