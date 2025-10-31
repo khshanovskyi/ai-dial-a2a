@@ -22,39 +22,6 @@ class BaseAgentTool(BaseTool, ABC):
     def deployment_name(self) -> str:
         pass
 
-    def _prepare_messages(self, tool_call_params: ToolCallParams) -> list[dict[str, Any]]:
-        arguments = json.loads(tool_call_params.tool_call.function.arguments)
-        prompt = arguments["prompt"]
-        propagate_history = bool(arguments.get("propagate_history", False))
-
-        messages = []
-
-        if propagate_history:
-            for idx in range(len(tool_call_params.messages)):
-                msg = tool_call_params.messages[idx]
-                if msg.role == Role.ASSISTANT:
-                    if msg.custom_content and msg.custom_content.state:
-                        msg_state = msg.custom_content.state
-                        if msg_state.get(self.name):
-                            # 1. add user request (user message is always before assistant message)
-                            messages.append(tool_call_params.messages[idx - 1].dict(exclude_none=True))
-
-                            # 2. Copy assistant message
-                            copied_msg = deepcopy(msg)
-                            copied_msg.custom_content.state = msg_state.get(self.name)
-                            messages.append(copied_msg.dict(exclude_none=True))
-
-        custom_content = tool_call_params.messages[-1].custom_content
-        messages.append(
-            {
-                "role": "user",
-                "content": prompt,
-                "custom_content": custom_content.dict(exclude_none=True) if custom_content else None,
-            }
-        )
-
-        return messages
-
     async def _execute(self, tool_call_params: ToolCallParams) -> str | Message:
 
         stage = tool_call_params.stage
@@ -128,3 +95,36 @@ class BaseAgentTool(BaseTool, ABC):
             custom_content=custom_content,
             tool_call_id=StrictStr(tool_call_params.tool_call.id),
         )
+
+    def _prepare_messages(self, tool_call_params: ToolCallParams) -> list[dict[str, Any]]:
+        arguments = json.loads(tool_call_params.tool_call.function.arguments)
+        prompt = arguments["prompt"]
+        propagate_history = bool(arguments.get("propagate_history", False))
+
+        messages = []
+
+        if propagate_history:
+            for idx in range(len(tool_call_params.messages)):
+                msg = tool_call_params.messages[idx]
+                if msg.role == Role.ASSISTANT:
+                    if msg.custom_content and msg.custom_content.state:
+                        msg_state = msg.custom_content.state
+                        if msg_state.get(self.name):
+                            # 1. add user request (user message is always before assistant message)
+                            messages.append(tool_call_params.messages[idx - 1].dict(exclude_none=True))
+
+                            # 2. Copy assistant message
+                            copied_msg = deepcopy(msg)
+                            copied_msg.custom_content.state = msg_state.get(self.name)
+                            messages.append(copied_msg.dict(exclude_none=True))
+
+        custom_content = tool_call_params.messages[-1].custom_content
+        messages.append(
+            {
+                "role": "user",
+                "content": prompt,
+                "custom_content": custom_content.dict(exclude_none=True) if custom_content else None,
+            }
+        )
+
+        return messages
