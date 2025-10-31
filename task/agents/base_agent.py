@@ -27,17 +27,20 @@ class BaseAgent:
             tool.name: tool
             for tool in tools
         }
-        self.state = {
+        self.state: dict[str, Any] = {
             TOOL_CALL_HISTORY_KEY: []
         }
 
     async def handle_request(
-            self, deployment_name: str, choice: Choice, request: Request, response: Response) -> Message:
-        api_key = request.api_key
-
+            self,
+            deployment_name: str,
+            choice: Choice,
+            request: Request,
+            response: Response
+    ) -> Message:
         client: AsyncDial = AsyncDial(
             base_url=self.endpoint,
-            api_key=api_key,
+            api_key=request.api_key,
         )
 
         chunks = await client.chat.completions.create(
@@ -118,8 +121,13 @@ class BaseAgent:
 
         return unpacked_messages
 
-    async def _process_tool_call(self, tool_call: ToolCall, choice: Choice, request: Request, conversation_id: str) -> dict[
-        str, Any]:
+    async def _process_tool_call(
+            self,
+            tool_call: ToolCall,
+            choice: Choice,
+            request: Request,
+            conversation_id: str
+    ) -> dict[str, Any]:
         tool_name = tool_call.function.name
         tool = self._tools_dict[tool_name]
 
@@ -147,6 +155,11 @@ class BaseAgent:
             )
         )
 
+        self._gather_tool_history_to_state(
+            tool_name=tool_name,
+            tool_message=tool_message,
+        )
+
         if stage and tool.stage_config.show_response_in_stage:
             stage.append_content("## Response: \n")
             stage.append_content(tool_message.content)
@@ -155,3 +168,13 @@ class BaseAgent:
             StageProcessor.close_stage_safely(stage)
 
         return tool_message.dict(exclude_none=True)
+
+    def _gather_tool_history_to_state(self, tool_name: str, tool_message: Message):
+        if tool_message.custom_content and tool_message.custom_content.state:
+            if agent_tool_history := tool_message.custom_content.state.get(TOOL_CALL_HISTORY_KEY):
+                if self.state.get(tool_name):
+                    self.state[tool_name].extend(agent_tool_history)
+                else:
+                    self.state[tool_name] = {
+                        TOOL_CALL_HISTORY_KEY: agent_tool_history
+                    }

@@ -35,7 +35,7 @@ class RagTool(BaseTool):
         self.model = SentenceTransformer('all-MiniLM-L6-v2')
 
         self.text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=500,
+            chunk_size=300,
             chunk_overlap=50,
             length_function=len,
             separators=["\n\n"]

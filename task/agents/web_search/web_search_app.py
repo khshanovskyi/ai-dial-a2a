@@ -4,7 +4,7 @@ import uvicorn
 from aidial_sdk import DIALApp
 from aidial_sdk.chat_completion import ChatCompletion, Request, Response
 
-from task.agents.web_search.web_serach_agent import WebSearchAgent
+from task.agents.web_search.web_search_agent import WebSearchAgent
 from task.tools.base_tool import BaseTool
 from task.tools.deployment.calculatiuons_agent_tool import CalculationsAgentTool
 from task.tools.deployment.content_management_agent_tool import ContentManagementAgentTool
@@ -66,4 +66,12 @@ agent_app = WebSearchApplication()
 app.add_chat_completion(deployment_name="web-search-agent", impl=agent_app)
 
 if __name__ == "__main__":
-    uvicorn.run(app, port=5003, host="0.0.0.0")
+    import sys
+
+    if 'pydevd' in sys.modules:
+        config = uvicorn.Config(app, port=5003, host="0.0.0.0", log_level="info")
+        server = uvicorn.Server(config)
+        import asyncio
+        asyncio.run(server.serve())
+    else:
+        uvicorn.run(app, port=5003, host="0.0.0.0", log_level="info")

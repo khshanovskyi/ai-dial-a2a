@@ -26,11 +26,6 @@ class BaseAgentTool(BaseTool, ABC):
     def tool_parameters(self) -> dict[str, Any]:
         return {}
 
-    @property
-    @abstractmethod
-    def _state_key_name(self) -> str:
-        pass
-
     def _prepare_messages(self, tool_call_params: ToolCallParams) -> list[dict[str, Any]]:
         arguments = json.loads(tool_call_params.tool_call.function.arguments)
         prompt = arguments["prompt"]
@@ -44,23 +39,23 @@ class BaseAgentTool(BaseTool, ABC):
                 if msg.role == Role.ASSISTANT:
                     if msg.custom_content and msg.custom_content.state:
                         msg_state = msg.custom_content.state
-                        if msg_state.get(self._state_key_name):
+                        if msg_state.get(self.name):
                             # 1. add user request (user message is always before assistant message)
                             messages.append(tool_call_params.messages[idx - 1].dict(exclude_none=True))
 
                             # 2. Copy assistant message
                             copied_msg = deepcopy(msg)
-                            copied_msg.custom_content.state = msg_state.get(self._state_key_name)
+                            copied_msg.custom_content.state = msg_state.get(self.name)
                             messages.append(copied_msg.dict(exclude_none=True))
-        else:
-            custom_content = tool_call_params.messages[-1].custom_content
-            messages = [
-                {
-                    "role": "user",
-                    "content": prompt,
-                    "custom_content": custom_content.dict(exclude_none=True) if custom_content else None,
-                }
-            ]
+
+        custom_content = tool_call_params.messages[-1].custom_content
+        messages.append(
+            {
+                "role": "user",
+                "content": prompt,
+                "custom_content": custom_content.dict(exclude_none=True) if custom_content else None,
+            }
+        )
 
         return messages
 

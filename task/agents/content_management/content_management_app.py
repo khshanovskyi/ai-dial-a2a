@@ -44,4 +44,12 @@ agent_app = GeneralPurposeAgentApplication()
 app.add_chat_completion(deployment_name="content-management-agent", impl=agent_app)
 
 if __name__ == "__main__":
-    uvicorn.run(app, port=5002, host="0.0.0.0")
+    import sys
+
+    if 'pydevd' in sys.modules:
+        config = uvicorn.Config(app, port=5002, host="0.0.0.0", log_level="info")
+        server = uvicorn.Server(config)
+        import asyncio
+        asyncio.run(server.serve())
+    else:
+        uvicorn.run(app, port=5002, host="0.0.0.0", log_level="info")
