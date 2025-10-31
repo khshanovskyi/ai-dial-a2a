@@ -22,10 +22,6 @@ class BaseAgentTool(BaseTool, ABC):
     def deployment_name(self) -> str:
         pass
 
-    @property
-    def tool_parameters(self) -> dict[str, Any]:
-        return {}
-
     def _prepare_messages(self, tool_call_params: ToolCallParams) -> list[dict[str, Any]]:
         arguments = json.loads(tool_call_params.tool_call.function.arguments)
         prompt = arguments["prompt"]
