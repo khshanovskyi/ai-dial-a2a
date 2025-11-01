@@ -6,7 +6,7 @@ from aidial_sdk.chat_completion import ChatCompletion, Request, Response
 
 from task.agents.web_search.web_search_agent import WebSearchAgent
 from task.tools.base_tool import BaseTool
-from task.tools.deployment.calculatiuons_agent_tool import CalculationsAgentTool
+from task.tools.deployment.calculations_agent_tool import CalculationsAgentTool
 from task.tools.deployment.content_management_agent_tool import ContentManagementAgentTool
 from task.tools.mcp.mcp_client import MCPClient
 from task.tools.mcp.mcp_tool import MCPTool
