@@ -125,6 +125,7 @@ class RagTool(BaseTool):
         dial_client = AsyncDial(
             base_url=self.endpoint,
             api_key=tool_call_params.api_key,
+            api_version='2025-01-01-preview'
         )
         chunks_stream = await dial_client.chat.completions.create(
             messages=[
