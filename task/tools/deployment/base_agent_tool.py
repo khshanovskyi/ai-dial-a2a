@@ -27,7 +27,7 @@ class BaseAgentTool(BaseTool, ABC):
         # 1. All the agents that will used as tools will have two parameters in request:
         #   - `prompt` (the request to agent)
         #   - `propagate_history`, boolean whether we need to propagate the history of communication with called agent
-        # 2. Use AsyncDial, call the agent with steaming option.
+        # 2. Use AsyncDial (api_version='2025-01-01-preview'), call the agent with steaming option.
         #    Here, actually, you can find one of the most powerful features of DIAL - Unified protocol. All the
         #    applications that provide `/chat/completions` endpoint and following Unified protocol - can `communicate`
         #    between each other though Unified protocol (that is OpenAI compatible), in other words, applications can
